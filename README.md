@@ -19,3 +19,4 @@ PDF Generation is not yet implemented. This can be done by designing a generic t
 
 The list of entrances, destinations, and the homepage url pulls from `public/locations.json`. This seperate repo should eventually be merged with the main application, and this should be updated to pull from the same json that the main project uses for locations. This way, if new locations need to be added or existing ones need to be modified, they only need to be updated in one file rather than multiple.
 
+Make it look pretty! Match the style of the main webapp.
