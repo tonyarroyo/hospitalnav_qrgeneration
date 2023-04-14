@@ -1,0 +1,14 @@
+{
+    "entrances": [
+      "First Floor",
+      "Second Floor",
+      "Main Entrance"
+    ],
+    "destinations": [
+      "Radiology",
+      "Dentistry",
+      "OBGYN",
+      "h"
+    ],
+    "homepage_url" : "http://localhost:3000" 
+  }

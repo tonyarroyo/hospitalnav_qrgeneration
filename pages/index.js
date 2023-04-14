@@ -1,115 +1,112 @@
-import Head from 'next/head';
-import styles from '../styles/Home.module.css';
+import React from "react";
+import Image from "next/image"
+import ReactDOM from "react-dom";
+import QRCode from "react-qr-code";
+import { useState } from 'react';
+import { useRef } from 'react';
+import locations from '../public/locations.json';
+import { toPng } from 'html-to-image';
+import download from "downloadjs";
 
-export default function Home() {
+export default function QRGenerationPage() {
+  const [entranceValue, setEntranceValue] = useState('');
+  const [destinationValue, setDestinationValue] = useState('');
+  
+  const qr_label_ref = useRef(null)
+  const qr_subtitle_ref = useRef(null)
+  const qr_ref = useRef(null)
+  const destination_dropdown_ref = useRef(null)
+
+
+  function handleEntranceChange(event) {
+    setEntranceValue(event.target.value);
+    if(event.target.value != "")
+        destination_dropdown_ref.current.disabled = false;
+    else
+    {
+        destination_dropdown_ref.current.disabled = true;
+        destination_dropdown_ref.current.value = ""
+        destination_dropdown_ref.current.option = "(none)"
+    }
+  }
+
+  function handleDestinationChange(event) {
+    setDestinationValue(event.target.value);
+  }
+
+  function handleQRCodeClick() {
+    //Update QR Code label and generate url 
+    var qrlabel = "Clinic Directions"
+    var qrvalue = locations.homepage_url
+    if(entranceValue != "")
+    {
+        qrlabel += ` from ${entranceValue}`
+        qrvalue += `/${entranceValue}`
+        if(destinationValue != "")
+        {
+            qrlabel += ` to ${destinationValue}`
+            qrvalue += `/${destinationValue}`
+        }
+    }
+    qrvalue = qrvalue.replace(/ /g, "%20")
+    qr_label_ref.current.innerHTML = qrlabel
+    qr_subtitle_ref.current.innerHTML = qrvalue
+
+    //Render QR Code
+    ReactDOM.render(<QRCode value={qrvalue} />, document.getElementById("qr_div"))
+    return(qrlabel)
+  }
+
+  function handleQRJPGClick()
+  {
+    //render qrcode
+    var qrlabel = handleQRCodeClick()
+    toPng(document.getElementById('qr_container'))
+    .then(function (dataUrl) {
+        download(dataUrl, `${qrlabel}.png`);
+    });
+  }
+  function handlePDFClick() {
+    // Generate PDF logic goes here
+    alert("TODO: i dont work! make me work using pdf-lib!")
+  }
+
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+    <>
+        <div>
+        <h1>HospitalNav QR Code Generator</h1>
+        <p>Use this tool to generate QR codes that will be used by visitors to quickly navigate themselves through the Kentucky Clinic.</p>
+        <label htmlFor="entrances">Entrances:</label>
+        <select id="entrances" value={entranceValue} onChange={handleEntranceChange}>
+            <option value="">--Please choose an entrance--</option>
+            {locations.entrances.map((entrance) => (
+            <option key={entrance} value={entrance}>
+                {entrance}
+            </option>
+            ))}
+        </select>
+        <br />
+        <label htmlFor="destinations">Destinations:</label>
+        <select ref={destination_dropdown_ref} id="destinations" value={destinationValue} onChange={handleDestinationChange} disabled={true}>
+            <option value="">(none)</option>
+            {locations.destinations.map((destination) => (
+            <option key={destination} value={destination}>
+                {destination}
+            </option>
+            ))}
+        </select>
+        <br />
+        <button onClick={handleQRCodeClick}>Generate QR Code</button>
+        <button onClick={handleQRJPGClick}>Download QR Code</button>
+        <button onClick={handlePDFClick}>Download PDF</button>
         </div>
-      </main>
 
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel" className={styles.logo} />
-        </a>
-      </footer>
-
-      <style jsx>{`
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        footer img {
-          margin-left: 0.5rem;
-        }
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          text-decoration: none;
-          color: inherit;
-        }
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-      `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
-    </div>
-  )
+        <div id="qr_container">
+            <h3 ref={qr_label_ref}> </h3>
+            <h6 ref={qr_subtitle_ref}> </h6>
+            <div id="qr_div" ref={qr_ref} />
+                
+        </div>
+    </>
+  );
 }
